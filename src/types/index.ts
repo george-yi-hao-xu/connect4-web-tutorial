@@ -9,10 +9,12 @@ export enum Mode {
      AiAi = "ai vs ai"
 }
 
-export type Status =
-    | { tag: 'Win'; player: WhichPlayer}
-    | { tag: 'Draw';}
-    | { tag: 'OnGoing'; player: WhichPlayer};
+export type Status = { 
+    tag: 'Win' | 'Draw' | 'OnGoing'; 
+    player?: WhichPlayer; 
+    winning_cells?: CellCoord[] 
+}
+
 
 export interface CellCoord {
     col: number;

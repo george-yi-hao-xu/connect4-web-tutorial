@@ -1,0 +1,40 @@
+.app {
+    .app-main{
+        .game-board{
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+
+            .cell-row{
+                display: flex;
+                flex-direction: row;
+                gap: 2px;
+
+                .cell{
+                    width: 36px;
+                    height: 36px;
+
+                    &.RED{
+                        background-color: red;
+                    }
+
+                    &.YELLOW{
+                        background-color: yellow;
+                    }
+
+                    &.NONE {
+                        background-color: gray;
+                    }
+
+                    &.winning {
+                        outline: 1px solid black;
+                    }
+
+                    &.finished:not(.winning){
+                        opacity: 0.5;
+                    }
+                }
+            }
+        }
+    }
+}
