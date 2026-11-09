@@ -4,9 +4,9 @@ export enum WhichPlayer {
 }
 
 export enum Mode {
-     HumanHuman = "human vs human",
-     HumanAi = "human vs ai",
-     AiAi = "ai vs ai"
+     HumanHuman = "Human vs Human",
+     HumanAi = "Human vs AI",
+     AiAi = "AI vs AI"
 }
 
 export type Status = { 
@@ -31,6 +31,10 @@ export type GameMove = number;
 export type GameState = {
     matrix: GamePlace[][],
     current_player: WhichPlayer,
+    drop_coord?:{
+        col: number,
+        row: number
+    }
 }
 
 // export interface GameState{

@@ -58,8 +58,9 @@ export function check_status(s: GameState, chain: number): Status {
     }
 }
 
-export function apply_move(curr_state: GameState, move: GameMove): GameState{
+export function apply_move(curr_state: GameState, move: GameMove){
     const new_matrix : GamePlace[][]= []
+    let row = 0;
     const place = curr_state.current_player === WhichPlayer.P1 ? GamePlace.RED : GamePlace.YELLOW
     for (let i = 0; i < curr_state.matrix.length; i++){
         if(i != move){
@@ -68,6 +69,7 @@ export function apply_move(curr_state: GameState, move: GameMove): GameState{
             const target_col = [...curr_state.matrix[i]]
             target_col.reverse();
             const target_index = target_col.indexOf(GamePlace.NONE);
+            row = target_col.length - target_index - 1;
             target_col[target_index] = place;
             target_col.reverse();
             new_matrix.push(target_col)
@@ -76,7 +78,11 @@ export function apply_move(curr_state: GameState, move: GameMove): GameState{
 
     return {
         matrix: new_matrix,
-        current_player: curr_state.current_player === WhichPlayer.P1 ? WhichPlayer.P2 : WhichPlayer.P1
+        current_player: curr_state.current_player === WhichPlayer.P1 ? WhichPlayer.P2 : WhichPlayer.P1,
+        drop_coord: {
+            col: move,
+            row: row
+        }
     }
 }
 

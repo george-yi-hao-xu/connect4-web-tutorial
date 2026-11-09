@@ -1,0 +1,28 @@
+:root {
+  --color-bg-body: #f5f5f5;
+  --color-text-body: #1f2937;
+  --color-red-start: #ff6b75;
+  --color-red-end: #c1121f;
+  --color-yellow-start: #ffea8a;
+  --color-yellow-end: #d4a017;
+  --color-bg-cell-empty: #d1d5db;
+  --gap: 2px;
+  --gap-l: 8px;
+  --cell-size: 96px;
+  --cell-shadow:
+    inset 2px 2px 10px rgba(0, 0, 0, 0.7),
+    inset -1px -1px 6px rgba(255, 255, 255, 0.04),
+    0 1px 0 rgba(255, 255, 255, 0.04);
+}
+
+@mixin dark-tokens {
+  // DARK THEME
+  --color-bg-body: #0b1120;
+  --color-text-body: #f1f5f9;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    @include dark-tokens;
+  }
+}
