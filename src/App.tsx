@@ -18,7 +18,7 @@ function App(){
 
     function handleColClick(colIndex: number){
         if (lock) {
-            console.warn("board lock")
+            console.warn('board locked')
             return
         }
 
@@ -46,18 +46,17 @@ function App(){
 
         // trigger ai move
         if (mode === Mode.HumanAi && human_status.tag === 'OnGoing') {
-            setLock(true);
             const ai_move = minimax(human_game_state, CHAIN, AI_DEPTH)
+            setLock(true);
 
-            if (ai_move !== null) {
-                setTimeout(() => {
+            setTimeout(() => {
+                if (ai_move !== null) {
                     const ai_game_state = apply_move(human_game_state, ai_move)
                     setGameState(ai_game_state)
                     setGameStatus(check_status(ai_game_state, CHAIN))
-                    setLock(false);
+                    setLock(false)
                     return
-                }, 500)
-            }
+            }}, 500)
         }
 
         setGameState(human_game_state);
@@ -65,14 +64,40 @@ function App(){
     }
 
     function handleModeChange(newMode: Mode){
-        if (lock) {
-            console.warn('board lock')
-            return
-        }
         const new_game_state = create_an_empty_connect4_game_state(ROW, COL)
+        setMode(newMode);
+        setLock(false);
         setGameState(new_game_state);
         setGameStatus(check_status(new_game_state, CHAIN));
-        setMode(newMode);
+
+        if (newMode === Mode.AiAi) {
+            let ai_game_state = new_game_state
+            let ai_status = check_status(ai_game_state, CHAIN)
+            const jobs = []
+
+            while (ai_status.tag === 'OnGoing') {
+                const ai_move = minimax(ai_game_state, CHAIN, AI_DEPTH)
+                if (ai_move === null) break
+
+                ai_game_state = apply_move(ai_game_state, ai_move)
+                ai_status = check_status(ai_game_state, CHAIN)
+                const state_snapshot = ai_game_state
+                const status_snapshot = ai_status
+
+                jobs.push(() => {
+                    setGameState(state_snapshot)
+                    setGameStatus(status_snapshot)
+                })
+            }
+
+            jobs.forEach((job, index) => {
+                setTimeout(() => {
+                    job()
+                }, index * 200)
+            })
+
+            return
+        }
     }
 
     // helper
