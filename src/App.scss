@@ -24,7 +24,8 @@ button {
   background: var(--color-bg-body);
   color: var(--color-text-body);
   box-shadow: none;
-  border: 1px solid transparent;
+  border: none;
+  border-bottom: 1px solid transparent;
   cursor: pointer;
 
   &:hover:not(:disabled) {
