@@ -122,12 +122,14 @@ export function minimax(
 
     if (check_status(s, chain).tag !== 'OnGoing') return null
 
-    function ordered_legal_moves(state: GameState): GameMove[] {
-        const center = (state.matrix.length - 1) / 2
-        return get_legal_moves(state).sort((a, b) => {
-            const distanceDiff = Math.abs(a - center) - Math.abs(b - center)
-            return distanceDiff !== 0 ? distanceDiff : a - b
-        })
+    function shuffle(state: GameState): GameMove[] {
+        const result = [...get_legal_moves(state)]
+        for (let i = result.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [result[i], result[j]] = [result[j], result[i]];
+        }
+
+        return result;
     }
 
     function search(state: GameState, depth: number, alpha: number, beta: number): number {
@@ -140,7 +142,7 @@ export function minimax(
         if (state.current_player === WhichPlayer.P1) {
             let bestScore = -Infinity
 
-            for (const move of ordered_legal_moves(state)) {
+            for (const move of shuffle(state)) {
                 bestScore = Math.max(
                     bestScore,
                     search(apply_move(state, move), depth + 1, alpha, beta),
@@ -155,7 +157,7 @@ export function minimax(
         // P2 looking for MIN
         let bestScore = Infinity
 
-        for (const move of ordered_legal_moves(state)) {
+        for (const move of shuffle(state)) {
             bestScore = Math.min(
                 bestScore,
                 search(apply_move(state, move), depth + 1, alpha, beta),
@@ -173,7 +175,7 @@ export function minimax(
     let alpha = -Infinity
     let beta = Infinity
 
-    for (const move of ordered_legal_moves(s)) {
+    for (const move of shuffle(s)) {
         const score = search(apply_move(s, move), 1, alpha, beta)
         const isBetter = s.current_player === WhichPlayer.P1
             ? score > bestScore

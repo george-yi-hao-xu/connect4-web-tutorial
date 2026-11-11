@@ -20,6 +20,7 @@ function App(){
     const [difficulty, setDifficulty] = useState<Difficulty>(Difficulty.Normal)
 
     const [lock, setLock] = useState(false);
+    const [hint, setHint] = useState<{ col: number } | null>(null)
 
     function handleColClick(colIndex: number){
         if (lock) {
@@ -82,7 +83,7 @@ function App(){
             const jobs = []
 
             while (ai_status.tag === 'OnGoing') {
-                const ai_move = minimax(ai_game_state, CHAIN, AI_DEPTH)
+                const ai_move = minimax(ai_game_state, CHAIN, AI_DEPTH[difficulty])
                 if (ai_move === null) break
 
                 ai_game_state = apply_move(ai_game_state, ai_move)
@@ -99,11 +100,24 @@ function App(){
             jobs.forEach((job, index) => {
                 setTimeout(() => {
                     job()
-                }, index * 200)
+                }, index * 500)
             })
 
             return
         }
+    }
+
+    function handleHint(){
+        const isHumanTurn = mode === Mode.HumanHuman
+            || (mode === Mode.HumanAi && gameState.current_player === WhichPlayer.P1)
+
+        if (lock || gameStatus.tag !== 'OnGoing' || !isHumanTurn) {
+            return
+        }
+
+        const bestMove = minimax(gameState, CHAIN, AI_DEPTH[Difficulty.Hard])
+        setHint(bestMove === null ? null : { col: bestMove })
+        setTimeout(() => setHint(null), 1500)
     }
 
     // helper
@@ -118,14 +132,32 @@ function App(){
         : gameStatus.tag === 'Win'
             ? `${gameStatus.player} wins`
             : `${gameState.current_player}'s turn`
+    const canRequestHint = !lock
+        && gameStatus.tag === 'OnGoing'
+        && (mode === Mode.HumanHuman
+            || (mode === Mode.HumanAi && gameState.current_player === WhichPlayer.P1))
 
     return (
         <div className="app">
             <main className="app-main">
+                <div className="hint-btn-container">
+                    {mode !== Mode.AiAi && (
+                        <button
+                            type="button"
+                            aria-label="Show best move hint"
+                            disabled={!canRequestHint}
+                            onClick={handleHint}
+                            className="hint-button"
+                        >
+                            Show Hint
+                        </button>
+                    )}
+                </div>
+
                 {/* game board */}
                 <div className="game-board">
                     {Array.from({ length: COL }, (_, col) => {
-                        return <div className={`cell-col ${finished ? 'finished' : ''}`} key={col}>
+                        return <div className={`cell-col ${finished ? 'finished' : ''} ${hint?.col === col ? 'hint' : ''}`} key={col}>
                             {Array.from({ length: ROW}, (_, row) => {
                                 const place = gameState.matrix[col][row];
                                 const winning = Boolean(gameStatus.winning_cells?.some(cell => cell.col == col && cell.row == row))
@@ -171,6 +203,7 @@ function App(){
                                 ))}
                             </select>
                         )}
+
                         <button onClick={() => handleModeChange(mode)}>Refresh</button>
                     </div>
                 </div>
