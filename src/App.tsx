@@ -61,6 +61,16 @@ function App(){
 
     // helper
     const finished = gameStatus.tag !== 'OnGoing'
+    const displayedPlayer = gameStatus.tag === 'OnGoing'
+        ? gameState.current_player
+        : gameStatus.tag === 'Win'
+            ? gameStatus.player
+            : undefined
+    const statusText = gameStatus.tag === 'Draw'
+        ? 'Draw'
+        : gameStatus.tag === 'Win'
+            ? `${gameStatus.player} wins`
+            : `${gameState.current_player}'s turn`
 
     return (
         <div className="app">
@@ -88,14 +98,23 @@ function App(){
 
                 {/* mode switch */}
                 <div className="control">
-                    <select value={mode} onChange={e => handleModeChange(e.target.value as Mode)}>
-                        {Object.values(Mode).map(m => {
-                            return (
-                                <option value={m} id={m} key={m}>{m}</option>
-                            )
-                        })}
-                    </select>
-                    <button onClick={() => handleModeChange(mode)}>Refresh</button>
+                    <div className="turn-status" role="status" aria-live="polite">
+                        {displayedPlayer && (
+                            <span className={`turn-indicator ${displayedPlayer}`} aria-hidden="true"></span>
+                        )}
+                        <span>{statusText}</span>
+                    </div>
+
+                    <div className="control-actions">
+                        <select value={mode} onChange={e => handleModeChange(e.target.value as Mode)}>
+                            {Object.values(Mode).map(m => {
+                                return (
+                                    <option value={m} id={m} key={m}>{m}</option>
+                                )
+                            })}
+                        </select>
+                        <button onClick={() => handleModeChange(mode)}>Refresh</button>
+                    </div>
                 </div>
             </main>
         </div>
