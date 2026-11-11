@@ -14,7 +14,14 @@ function App(){
     const [gameStatus, setGameStatus] = useState<Status>({tag: 'OnGoing', player: WhichPlayer.P1 } as Status)
     const [mode, setMode] = useState<Mode>(Mode.HumanHuman)
 
+    const [lock, setLock] = useState(false);
+
     function handleColClick(colIndex: number){
+        if (lock) {
+            console.warn("board lock")
+            return
+        }
+
         if (mode === Mode.HumanAi && gameState.current_player !== WhichPlayer.P1) {
             return
         }
@@ -37,14 +44,19 @@ function App(){
         const human_game_state = apply_move(gameState, colIndex);
         const human_status = check_status(human_game_state, CHAIN);
 
+        // trigger ai move
         if (mode === Mode.HumanAi && human_status.tag === 'OnGoing') {
+            setLock(true);
             const ai_move = minimax(human_game_state, CHAIN, AI_DEPTH)
 
             if (ai_move !== null) {
-                const ai_game_state = apply_move(human_game_state, ai_move)
-                setGameState(ai_game_state)
-                setGameStatus(check_status(ai_game_state, CHAIN))
-                return
+                setTimeout(() => {
+                    const ai_game_state = apply_move(human_game_state, ai_move)
+                    setGameState(ai_game_state)
+                    setGameStatus(check_status(ai_game_state, CHAIN))
+                    setLock(false);
+                    return
+                }, 500)
             }
         }
 
@@ -53,6 +65,10 @@ function App(){
     }
 
     function handleModeChange(newMode: Mode){
+        if (lock) {
+            console.warn('board lock')
+            return
+        }
         const new_game_state = create_an_empty_connect4_game_state(ROW, COL)
         setGameState(new_game_state);
         setGameStatus(check_status(new_game_state, CHAIN));
