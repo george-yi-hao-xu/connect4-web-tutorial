@@ -1,20 +1,26 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { apply_move, check_status, create_an_empty_connect4_game_state, get_legal_moves, minimax } from "./utils/game";
-import { GameState, Mode, Status, WhichPlayer } from "./types";
+import { Difficulty, GameState, Mode, Status, WhichPlayer } from "./types";
 
 import "./App.scss"
 
 const ROW = 5
 const COL = 6
 const CHAIN = 4
-const AI_DEPTH = 5
+const AI_DEPTH: Record<Difficulty, number> = {
+    [Difficulty.Easy]: 1,
+    [Difficulty.Normal]: 3,
+    [Difficulty.Hard]: 5,
+}
 
 function App(){
     const [gameState, setGameState] = useState<GameState>(create_an_empty_connect4_game_state(ROW, COL));
     const [gameStatus, setGameStatus] = useState<Status>({tag: 'OnGoing', player: WhichPlayer.P1 } as Status)
-    const [mode, setMode] = useState<Mode>(Mode.HumanHuman)
+    const [mode, setMode] = useState<Mode>(Mode.HumanAi)
+    const [difficulty, setDifficulty] = useState<Difficulty>(Difficulty.Normal)
 
     const [lock, setLock] = useState(false);
+    const [hint, setHint] = useState<{ col: number } | null>(null)
 
     function handleColClick(colIndex: number){
         if (lock) {
@@ -22,7 +28,8 @@ function App(){
             return
         }
 
-        if (mode === Mode.HumanAi && gameState.current_player !== WhichPlayer.P1) {
+        if (mode === Mode.AiAi
+            || (mode === Mode.HumanAi && gameState.current_player !== WhichPlayer.P1)) {
             return
         }
 
@@ -46,7 +53,7 @@ function App(){
 
         // trigger ai move
         if (mode === Mode.HumanAi && human_status.tag === 'OnGoing') {
-            const ai_move = minimax(human_game_state, CHAIN, AI_DEPTH)
+            const ai_move = minimax(human_game_state, CHAIN, AI_DEPTH[difficulty])
             setLock(true);
 
             setTimeout(() => {
@@ -76,7 +83,7 @@ function App(){
             const jobs = []
 
             while (ai_status.tag === 'OnGoing') {
-                const ai_move = minimax(ai_game_state, CHAIN, AI_DEPTH)
+                const ai_move = minimax(ai_game_state, CHAIN, AI_DEPTH[difficulty])
                 if (ai_move === null) break
 
                 ai_game_state = apply_move(ai_game_state, ai_move)
@@ -93,11 +100,24 @@ function App(){
             jobs.forEach((job, index) => {
                 setTimeout(() => {
                     job()
-                }, index * 200)
+                }, index * 500)
             })
 
             return
         }
+    }
+
+    function handleHint(){
+        const isHumanTurn = mode === Mode.HumanHuman
+            || (mode === Mode.HumanAi && gameState.current_player === WhichPlayer.P1)
+
+        if (lock || gameStatus.tag !== 'OnGoing' || !isHumanTurn) {
+            return
+        }
+
+        const bestMove = minimax(gameState, CHAIN, AI_DEPTH[Difficulty.Hard])
+        setHint(bestMove === null ? null : { col: bestMove })
+        setTimeout(() => setHint(null), 1500)
     }
 
     // helper
@@ -112,14 +132,32 @@ function App(){
         : gameStatus.tag === 'Win'
             ? `${gameStatus.player} wins`
             : `${gameState.current_player}'s turn`
+    const canRequestHint = !lock
+        && gameStatus.tag === 'OnGoing'
+        && (mode === Mode.HumanHuman
+            || (mode === Mode.HumanAi && gameState.current_player === WhichPlayer.P1))
 
     return (
         <div className="app">
             <main className="app-main">
+                <div className="hint-btn-container">
+                    {mode !== Mode.AiAi && (
+                        <button
+                            type="button"
+                            aria-label="Show best move hint"
+                            disabled={!canRequestHint}
+                            onClick={handleHint}
+                            className="hint-button"
+                        >
+                            Show Hint
+                        </button>
+                    )}
+                </div>
+
                 {/* game board */}
                 <div className="game-board">
                     {Array.from({ length: COL }, (_, col) => {
-                        return <div className={`cell-col ${finished ? 'finished' : ''}`} key={col}>
+                        return <div className={`cell-col ${finished ? 'finished' : ''} ${hint?.col === col ? 'hint' : ''}`} key={col}>
                             {Array.from({ length: ROW}, (_, row) => {
                                 const place = gameState.matrix[col][row];
                                 const winning = Boolean(gameStatus.winning_cells?.some(cell => cell.col == col && cell.row == row))
@@ -154,6 +192,18 @@ function App(){
                                 )
                             })}
                         </select>
+                        {mode !== Mode.HumanHuman && (
+                            <select
+                                aria-label="AI difficulty"
+                                value={difficulty}
+                                onChange={e => setDifficulty(e.target.value as Difficulty)}
+                            >
+                                {Object.values(Difficulty).map(level => (
+                                    <option value={level} key={level}>{level}</option>
+                                ))}
+                            </select>
+                        )}
+
                         <button onClick={() => handleModeChange(mode)}>Refresh</button>
                     </div>
                 </div>

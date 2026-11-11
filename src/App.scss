@@ -25,9 +25,10 @@ button {
   color: var(--color-text-body);
   box-shadow: none;
   border: none;
+  border-bottom: 1px solid transparent;
   cursor: pointer;
 
-  &:hover{
+  &:hover:not(:disabled) {
     border-bottom: 1px solid var(--color-text-body);
   }
 }
@@ -45,6 +46,18 @@ button {
     flex-direction: column;
     justify-items: center;
     gap: var(--gap-l);
+
+    .hint-btn-container{
+      display: flex;
+      flex-direction: row;
+      justify-content: flex-end;
+      padding-right: var(--gap-l);
+
+      .hint-button{
+        width: fit-content;
+        text-align: right;
+      }
+    }
 
     .control {
       width: 100%;
@@ -94,9 +107,16 @@ button {
         padding: var(--gap);
         gap: var(--gap);
         width: fit-content;
+        transition: outline ease-in-out 200ms;
+        outline: 1px solid transparent;
 
         &:hover:not(.finished) {
           outline: 1px solid grey;
+        }
+
+        &.hint:not(.finished) {
+          outline: 1px solid white;
+          outline-offset: 1px;
         }
 
         .cell {
