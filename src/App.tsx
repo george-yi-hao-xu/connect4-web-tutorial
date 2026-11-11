@@ -12,7 +12,7 @@ const AI_DEPTH = 5
 function App(){
     const [gameState, setGameState] = useState<GameState>(create_an_empty_connect4_game_state(ROW, COL));
     const [gameStatus, setGameStatus] = useState<Status>({tag: 'OnGoing', player: WhichPlayer.P1 } as Status)
-    const [mode, setMode] = useState<Mode>(Mode.HumanHuman)
+    const [mode, setMode] = useState<Mode>(Mode.HumanAi)
 
     const [lock, setLock] = useState(false);
 
