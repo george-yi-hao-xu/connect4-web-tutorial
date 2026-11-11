@@ -1,11 +1,13 @@
 import { useState } from "react";
-import { apply_move, check_status, create_an_empty_connect4_game_state, get_legal_moves } from "./utils/game";
+import { apply_move, check_status, create_an_empty_connect4_game_state, get_legal_moves, minimax } from "./utils/game";
 import { GameState, Mode, Status, WhichPlayer } from "./types";
 
 import "./App.scss"
 
 const ROW = 5
 const COL = 6
+const CHAIN = 4
+const AI_DEPTH = 5
 
 function App(){
     const [gameState, setGameState] = useState<GameState>(create_an_empty_connect4_game_state(ROW, COL));
@@ -13,6 +15,10 @@ function App(){
     const [mode, setMode] = useState<Mode>(Mode.HumanHuman)
 
     function handleColClick(colIndex: number){
+        if (mode === Mode.HumanAi && gameState.current_player !== WhichPlayer.P1) {
+            return
+        }
+
         // check legal move
         const legalMoves = get_legal_moves(gameState)
         if(!legalMoves.includes(colIndex)) {
@@ -21,21 +27,35 @@ function App(){
         }
 
         // check if it's already win or draw
-        const current_status = check_status(gameState, 4); 
+        const current_status = check_status(gameState, CHAIN);
         setGameStatus(current_status);
         if (current_status.tag != 'OnGoing') {
             console.log('Invalid Input; Game has been over');
             return
         }
 
-        const new_game_state = apply_move(gameState, colIndex);
-        setGameState(new_game_state);
-        const new_status = check_status(new_game_state, 4);
-        setGameStatus(new_status);
+        const human_game_state = apply_move(gameState, colIndex);
+        const human_status = check_status(human_game_state, CHAIN);
+
+        if (mode === Mode.HumanAi && human_status.tag === 'OnGoing') {
+            const ai_move = minimax(human_game_state, CHAIN, AI_DEPTH)
+
+            if (ai_move !== null) {
+                const ai_game_state = apply_move(human_game_state, ai_move)
+                setGameState(ai_game_state)
+                setGameStatus(check_status(ai_game_state, CHAIN))
+                return
+            }
+        }
+
+        setGameState(human_game_state);
+        setGameStatus(human_status);
     }
 
     function handleModeChange(newMode: Mode){
-        setGameState(create_an_empty_connect4_game_state(ROW, COL));
+        const new_game_state = create_an_empty_connect4_game_state(ROW, COL)
+        setGameState(new_game_state);
+        setGameStatus(check_status(new_game_state, CHAIN));
         setMode(newMode);
     }
 
