@@ -1,0 +1,46 @@
+export enum WhichPlayer {
+    P1 = 'P1',
+    P2 = 'P2'
+}
+
+export enum Mode {
+     HumanHuman = "Human vs Human",
+     HumanAi = "Human vs AI",
+     AiAi = "AI vs AI"
+}
+
+export type Status = { 
+    tag: 'Win' | 'Draw' | 'OnGoing'; 
+    player?: WhichPlayer; 
+    winning_cells?: CellCoord[] 
+}
+
+
+export interface CellCoord {
+    col: number;
+    row: number;
+}
+
+export enum GamePlace {
+    RED = 'RED',
+    YELLOW = 'YELLOW',
+    NONE = 'NONE'
+}
+
+export type GameMove = number;
+export type GameState = {
+    matrix: GamePlace[][],
+    current_player: WhichPlayer,
+    drop_coord?:{
+        col: number,
+        row: number
+    }
+}
+
+// export interface GameState{
+//     matrix: GamePlace[][];
+//     get_legal_moves(): GameMove[];
+//     get_status(): Status;
+//     get_score(): number;
+//     calc_next_state(move: GameMove): GameState;
+// }
