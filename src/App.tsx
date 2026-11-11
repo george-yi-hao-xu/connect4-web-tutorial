@@ -1,18 +1,23 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { apply_move, check_status, create_an_empty_connect4_game_state, get_legal_moves, minimax } from "./utils/game";
-import { GameState, Mode, Status, WhichPlayer } from "./types";
+import { Difficulty, GameState, Mode, Status, WhichPlayer } from "./types";
 
 import "./App.scss"
 
 const ROW = 5
 const COL = 6
 const CHAIN = 4
-const AI_DEPTH = 5
+const AI_DEPTH: Record<Difficulty, number> = {
+    [Difficulty.Easy]: 1,
+    [Difficulty.Normal]: 3,
+    [Difficulty.Hard]: 5,
+}
 
 function App(){
     const [gameState, setGameState] = useState<GameState>(create_an_empty_connect4_game_state(ROW, COL));
     const [gameStatus, setGameStatus] = useState<Status>({tag: 'OnGoing', player: WhichPlayer.P1 } as Status)
     const [mode, setMode] = useState<Mode>(Mode.HumanAi)
+    const [difficulty, setDifficulty] = useState<Difficulty>(Difficulty.Normal)
 
     const [lock, setLock] = useState(false);
 
@@ -22,7 +27,8 @@ function App(){
             return
         }
 
-        if (mode === Mode.HumanAi && gameState.current_player !== WhichPlayer.P1) {
+        if (mode === Mode.AiAi
+            || (mode === Mode.HumanAi && gameState.current_player !== WhichPlayer.P1)) {
             return
         }
 
@@ -46,7 +52,7 @@ function App(){
 
         // trigger ai move
         if (mode === Mode.HumanAi && human_status.tag === 'OnGoing') {
-            const ai_move = minimax(human_game_state, CHAIN, AI_DEPTH)
+            const ai_move = minimax(human_game_state, CHAIN, AI_DEPTH[difficulty])
             setLock(true);
 
             setTimeout(() => {
@@ -154,6 +160,17 @@ function App(){
                                 )
                             })}
                         </select>
+                        {mode !== Mode.HumanHuman && (
+                            <select
+                                aria-label="AI difficulty"
+                                value={difficulty}
+                                onChange={e => setDifficulty(e.target.value as Difficulty)}
+                            >
+                                {Object.values(Difficulty).map(level => (
+                                    <option value={level} key={level}>{level}</option>
+                                ))}
+                            </select>
+                        )}
                         <button onClick={() => handleModeChange(mode)}>Refresh</button>
                     </div>
                 </div>

@@ -9,6 +9,12 @@ export enum Mode {
      AiAi = "AI vs AI"
 }
 
+export enum Difficulty {
+    Easy = "Easy",
+    Normal = "Normal",
+    Hard = "Hard"
+}
+
 export type Status = { 
     tag: 'Win' | 'Draw' | 'OnGoing'; 
     player?: WhichPlayer; 
